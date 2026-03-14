@@ -1,0 +1,127 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../node_modules/.prisma/client"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum OrganizationType {
+  BANK
+  HEDGE_FUND
+  ASSET_MANAGER
+  REAL_ESTATE_COMPANY
+  PRIVATE_CREDIT_FIRM
+  INVESTMENT_PLATFORM
+  OTHER
+}
+
+enum Blockchain {
+  ETHEREUM
+  POLYGON
+  BASE
+  PRIVATE_EVM
+}
+
+enum InstrumentType {
+  BOND
+  FIXED_DEPOSIT
+  REAL_ESTATE_ASSET
+  PRIVATE_CREDIT
+  FUND_SHARES
+}
+
+enum InstrumentStatus {
+  DRAFT
+  DEPLOYED
+  ACTIVE
+  PAUSED
+  CLOSED
+}
+
+model User {
+  id             String        @id @default(cuid())
+  email          String        @unique
+  password       String
+  name           String?
+  organizationId String?
+  organization   Organization? @relation(fields: [organizationId], references: [id])
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+}
+
+model Organization {
+  id              String             @id @default(cuid())
+  name            String
+  country         String
+  type            OrganizationType
+  website         String?
+  logoUrl         String?
+  legalEntityName String?
+  blockchain      Blockchain?
+  users           User[]
+  wallets         Wallet[]
+  instruments     Instrument[]
+  contracts       ContractDeployment[]
+  investors       Investor[]
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+}
+
+model Wallet {
+  id             String       @id @default(cuid())
+  address        String       @unique
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+}
+
+model Instrument {
+  id                String           @id @default(cuid())
+  name              String
+  type              InstrumentType
+  supply            BigInt
+  symbol            String
+  minimumInvestment Decimal?
+  interestRate      Decimal?
+  maturityDate      DateTime?
+  status            InstrumentStatus @default(DRAFT)
+  organizationId    String
+  organization      Organization     @relation(fields: [organizationId], references: [id])
+  contracts         ContractDeployment[]
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+}
+
+model ContractDeployment {
+  id                 String       @id @default(cuid())
+  organizationId     String
+  organization       Organization @relation(fields: [organizationId], references: [id])
+  instrumentId       String?
+  instrument         Instrument?  @relation(fields: [instrumentId], references: [id])
+  tokenContract      String?
+  registryContract   String?
+  treasuryContract   String?
+  complianceContract String?
+  transactionHash    String?
+  blockNumber        BigInt?
+  deployedAt         DateTime     @default(now())
+  createdAt          DateTime     @default(now())
+  updatedAt          DateTime     @updatedAt
+}
+
+model Investor {
+  id             String       @id @default(cuid())
+  name           String
+  email          String
+  walletAddress  String?
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+}
