@@ -18,8 +18,8 @@ const PAIN_POINTS = [
     label: 'Settlement Cycles',
     pain: 'Capital is locked for 2–3 business days per trade, costing institutions millions in trapped liquidity annually.',
     color: 'from-red-500 to-rose-600',
-    bg: 'bg-red-50 dark:bg-red-950/30',
-    border: 'border-red-200 dark:border-red-800',
+    bg: 'bg-red-50',
+    border: 'border-red-200',
   },
   {
     icon: DollarSign,
@@ -27,8 +27,8 @@ const PAIN_POINTS = [
     label: 'Issuance Cost',
     pain: 'Issuing a single bond series costs over $2 million in legal fees, intermediary charges, and infrastructure setup.',
     color: 'from-orange-500 to-amber-600',
-    bg: 'bg-orange-50 dark:bg-orange-950/30',
-    border: 'border-orange-200 dark:border-orange-800',
+    bg: 'bg-orange-50',
+    border: 'border-orange-200',
   },
   {
     icon: AlertTriangle,
@@ -36,8 +36,8 @@ const PAIN_POINTS = [
     label: 'Time to Market',
     pain: 'From board approval to live issuance, the average structured product takes nearly a year to reach investors.',
     color: 'from-yellow-500 to-orange-500',
-    bg: 'bg-yellow-50 dark:bg-yellow-950/30',
-    border: 'border-yellow-200 dark:border-yellow-800',
+    bg: 'bg-yellow-50',
+    border: 'border-yellow-200',
   },
   {
     icon: Users,
@@ -45,8 +45,8 @@ const PAIN_POINTS = [
     label: 'Intermediaries',
     pain: 'A single bond issuance involves custodians, clearing houses, transfer agents, registrars, and settlement banks — each adding cost and delay.',
     color: 'from-purple-500 to-violet-600',
-    bg: 'bg-purple-50 dark:bg-purple-950/30',
-    border: 'border-purple-200 dark:border-purple-800',
+    bg: 'bg-purple-50',
+    border: 'border-purple-200',
   },
 ]
 
@@ -247,9 +247,9 @@ export default function HomePage() {
                   <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${p.color} flex items-center justify-center mb-5`}>
                     <Icon className="w-6 h-6 text-white" />
                   </div>
-                  <div className="text-3xl font-black text-foreground mb-1">{p.stat}</div>
-                  <div className="text-sm font-bold text-foreground mb-3">{p.label}</div>
-                  <p className="text-sm text-muted-foreground leading-relaxed">{p.pain}</p>
+                  <div className="text-3xl font-black text-slate-900 mb-1">{p.stat}</div>
+                  <div className="text-sm font-bold text-slate-800 mb-3">{p.label}</div>
+                  <p className="text-sm text-slate-600 leading-relaxed">{p.pain}</p>
                   <div className={`absolute -bottom-4 -right-4 w-24 h-24 rounded-full bg-gradient-to-br ${p.color} opacity-10`} />
                 </div>
               )
