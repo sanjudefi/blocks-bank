@@ -1,7 +1,7 @@
 'use client'
 
 import { useAccount, useConnect, useDisconnect, useChainId, useSwitchChain } from 'wagmi'
-import { metaMask } from 'wagmi/connectors'
+import { injected } from '@wagmi/core'
 import { Copy, CheckCircle2, Wallet, ChevronDown, ExternalLink, AlertCircle } from 'lucide-react'
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
@@ -27,7 +27,7 @@ export default function WalletConnect({ onConnected }: { onConnected?: (address:
 
   const handleConnect = () => {
     connect(
-      { connector: metaMask() },
+      { connector: injected({ target: 'metaMask' }) },
       {
         onSuccess: (data) => {
           if (onConnected && data.accounts[0]) onConnected(data.accounts[0])

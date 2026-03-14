@@ -1,19 +1,20 @@
 import { createConfig, http } from 'wagmi'
 import { mainnet, polygon, base, sepolia } from 'wagmi/chains'
-import { metaMask } from 'wagmi/connectors'
+import { injected } from '@wagmi/core'
 
-// Factory — called inside Providers so it only runs client-side
+// Use injected({ target: 'metaMask' }) instead of metaMask().
+// metaMask() uses @metamask/sdk which accesses browser globals at
+// initialisation time and crashes Next.js SSR. injected() is a
+// lightweight connector that only touches window.ethereum at connect time.
 export function createWagmiConfig() {
   const alchemyKey = process.env.NEXT_PUBLIC_ALCHEMY_API_KEY
 
-  const rpc = (subdomain: string) =>
-    alchemyKey
-      ? http(`https://${subdomain}.g.alchemy.com/v2/${alchemyKey}`)
-      : http()
+  const rpc = (sub: string) =>
+    alchemyKey ? http(`https://${sub}.g.alchemy.com/v2/${alchemyKey}`) : http()
 
   return createConfig({
     chains: [mainnet, polygon, base, sepolia],
-    connectors: [metaMask()],
+    connectors: [injected({ target: 'metaMask' })],
     ssr: true,
     transports: {
       [mainnet.id]: rpc('eth-mainnet'),
