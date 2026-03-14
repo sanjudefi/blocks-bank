@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation'
 import {
   Building2, Landmark, TrendingUp, PieChart, Home,
   Banknote, Globe, Grid3X3, Eye, EyeOff, Loader2,
-  ArrowRight, ChevronLeft,
+  ArrowRight, ChevronLeft, Wallet,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -43,6 +43,7 @@ export default function SignupPage() {
   // Login form state
   const [loginEmail, setLoginEmail] = useState('')
   const [loginPassword, setLoginPassword] = useState('')
+  const [metamaskLoading, setMetamaskLoading] = useState(false)
 
   const saveSession = (data: { user: object; organization: object }) => {
     localStorage.setItem('user', JSON.stringify(data.user))
@@ -65,6 +66,34 @@ export default function SignupPage() {
       router.push('/dashboard')
     } catch { setError('Network error. Please try again.') }
     finally { setLoading(false) }
+  }
+
+  /* ── MetaMask login ── */
+  const handleMetaMask = async () => {
+    if (typeof window === 'undefined' || !(window as any).ethereum) {
+      setError('MetaMask not found. Please install the MetaMask browser extension.')
+      return
+    }
+    setMetamaskLoading(true); setError('')
+    try {
+      const accounts: string[] = await (window as any).ethereum.request({ method: 'eth_requestAccounts' })
+      const address = accounts[0]
+      if (!address) { setError('No account selected in MetaMask.'); return }
+      // Look up user by wallet address, or create a wallet-based session
+      const res = await fetch('/api/auth/wallet', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ address }),
+      })
+      const data = await res.json()
+      if (!res.ok) { setError(data.error || 'Wallet login failed.'); return }
+      localStorage.setItem('user', JSON.stringify(data.user))
+      localStorage.setItem('organizationId', data.user.organizationId || '')
+      router.push('/dashboard')
+    } catch (err: any) {
+      if (err?.code === 4001) setError('MetaMask connection was rejected.')
+      else setError('Failed to connect MetaMask.')
+    } finally { setMetamaskLoading(false) }
   }
 
   /* ── Demo login ── */
@@ -207,6 +236,36 @@ export default function SignupPage() {
                   {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Sign In'}
                 </Button>
               </form>
+
+              {/* MetaMask */}
+              <div>
+                <div className="flex items-center gap-3 my-4">
+                  <div className="flex-1 h-px bg-border" />
+                  <span className="text-xs text-muted-foreground">or</span>
+                  <div className="flex-1 h-px bg-border" />
+                </div>
+                <button
+                  onClick={handleMetaMask}
+                  disabled={metamaskLoading || loading}
+                  className="w-full flex items-center justify-center gap-2.5 border border-border rounded-xl h-11 text-sm font-medium hover:bg-accent/50 transition-colors disabled:opacity-50"
+                >
+                  {metamaskLoading ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <svg width="20" height="20" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M36.4 3L22.1 13.6l2.6-6.1L36.4 3z" fill="#E2761B" stroke="#E2761B" strokeWidth=".5" strokeLinecap="round" strokeLinejoin="round"/>
+                      <path d="M3.6 3l14.2 10.7-2.5-6.2L3.6 3z" fill="#E4761B" stroke="#E4761B" strokeWidth=".5" strokeLinecap="round" strokeLinejoin="round"/>
+                      <path d="M31 28.3l-3.8 5.8 8.1 2.2 2.3-7.9-6.6-.1z" fill="#E4761B" stroke="#E4761B" strokeWidth=".5" strokeLinecap="round" strokeLinejoin="round"/>
+                      <path d="M2.4 28.4l2.3 7.9 8.1-2.2-3.8-5.8-6.6.1z" fill="#E4761B" stroke="#E4761B" strokeWidth=".5" strokeLinecap="round" strokeLinejoin="round"/>
+                      <path d="M12.4 18.1l-2.2 3.4 7.9.4-.3-8.5-5.4 4.7z" fill="#E4761B" stroke="#E4761B" strokeWidth=".5" strokeLinecap="round" strokeLinejoin="round"/>
+                      <path d="M27.6 18.1l-5.5-4.8-.2 8.6 7.9-.4-2.2-3.4z" fill="#E4761B" stroke="#E4761B" strokeWidth=".5" strokeLinecap="round" strokeLinejoin="round"/>
+                      <path d="M12.8 34.1l4.8-2.3-4.1-3.2-.7 5.5z" fill="#E4761B" stroke="#E4761B" strokeWidth=".5" strokeLinecap="round" strokeLinejoin="round"/>
+                      <path d="M22.4 31.8l4.8 2.3-.8-5.5-4 3.2z" fill="#E4761B" stroke="#E4761B" strokeWidth=".5" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                  )}
+                  <span>Connect with MetaMask</span>
+                </button>
+              </div>
 
               {/* Demo accounts */}
               <div>

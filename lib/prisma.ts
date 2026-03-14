@@ -8,8 +8,9 @@ declare global {
 function createClient(): PrismaClient {
   const url = process.env.blocks_MONGODB_URI || process.env.DATABASE_URL
   if (!url) throw new Error('MongoDB connection string not set. Add blocks_MONGODB_URI to environment variables.')
-  // Prisma v7: pass URL via datasourceUrl (replaces deprecated datasources option)
-  return new PrismaClient({ datasourceUrl: url } as ConstructorParameters<typeof PrismaClient>[0])
+  // Prisma v7 reads DATABASE_URL at runtime — set it from our custom env var
+  if (!process.env.DATABASE_URL) process.env.DATABASE_URL = url
+  return new PrismaClient()
 }
 
 function getClient(): PrismaClient {

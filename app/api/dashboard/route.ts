@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { isDemoOrg, getDemoDashboard } from '@/lib/demo-data'
 
 export async function GET(req: NextRequest) {
   try {
@@ -10,7 +11,12 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'organizationId is required.' }, { status: 400 })
     }
 
-    // MongoDB ObjectIds must be 24-char hex strings — return empty data for demo/invalid IDs
+    // Return rich demo data for demo org IDs (not valid MongoDB ObjectIds)
+    if (isDemoOrg(organizationId)) {
+      return NextResponse.json(getDemoDashboard(organizationId))
+    }
+
+    // MongoDB ObjectIds must be 24-char hex strings
     const isValidObjectId = /^[a-f\d]{24}$/i.test(organizationId)
     if (!isValidObjectId) {
       return NextResponse.json({

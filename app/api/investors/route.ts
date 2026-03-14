@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { isDemoOrg, DEMO_CONTRACTS } from '@/lib/demo-data'
+import { isDemoOrg, DEMO_INVESTORS } from '@/lib/demo-data'
 
 export async function GET(req: NextRequest) {
   try {
@@ -12,22 +12,22 @@ export async function GET(req: NextRequest) {
     }
 
     if (isDemoOrg(organizationId)) {
-      return NextResponse.json({ contracts: DEMO_CONTRACTS[organizationId] ?? [] })
+      return NextResponse.json({ investors: DEMO_INVESTORS[organizationId] ?? [] })
     }
 
-    const contracts = await prisma.contractDeployment.findMany({
+    const isValidObjectId = /^[a-f\d]{24}$/i.test(organizationId)
+    if (!isValidObjectId) {
+      return NextResponse.json({ investors: [] })
+    }
+
+    const investors = await prisma.investor.findMany({
       where: { organizationId },
-      include: {
-        instrument: {
-          select: { name: true, symbol: true, type: true },
-        },
-      },
-      orderBy: { deployedAt: 'desc' },
+      orderBy: { createdAt: 'desc' },
     })
 
-    return NextResponse.json({ contracts })
+    return NextResponse.json({ investors })
   } catch (error) {
-    console.error('GET contracts error:', error)
+    console.error('GET investors error:', error)
     return NextResponse.json({ error: 'Internal server error.' }, { status: 500 })
   }
 }
