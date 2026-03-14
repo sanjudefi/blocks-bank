@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import Image from 'next/image'
 import {
   Building2, Users, FileText, Code2, Shield, LogOut,
   TrendingUp, Globe, Landmark, PieChart, Home, Banknote,
@@ -56,11 +57,8 @@ export default function AdminPage() {
     <div className="min-h-screen bg-background">
       {/* Topbar */}
       <header className="h-14 border-b border-border bg-card flex items-center px-6 gap-4">
-        <Link href="/" className="flex items-center gap-2 mr-4">
-          <div className="w-7 h-7 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center">
-            <Building2 className="w-4 h-4 text-white" />
-          </div>
-          <span className="font-bold text-sm">Blocks Bank</span>
+        <Link href="/" className="mr-4">
+          <Image src="/logo-full.svg" alt="Blocks Bank" width={120} height={36} className="h-8 w-auto" />
         </Link>
         <div className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-amber-100 dark:bg-amber-900/30 border border-amber-300 dark:border-amber-700">
           <Shield className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />

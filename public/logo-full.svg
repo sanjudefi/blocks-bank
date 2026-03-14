@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 340 120" fill="none">
+  <!-- Icon part (cube) scaled down -->
+  <!-- Pixel dots -->
+  <rect x="72" y="8" width="5" height="5" rx="1" fill="#38BDF8" opacity="0.9"/>
+  <rect x="80" y="8" width="4" height="4" rx="1" fill="#38BDF8" opacity="0.6"/>
+  <rect x="87" y="11" width="3" height="3" rx="0.8" fill="#38BDF8" opacity="0.35"/>
+  <rect x="72" y="16" width="4" height="4" rx="1" fill="#38BDF8" opacity="0.5"/>
+  <rect x="79" y="15" width="3" height="3" rx="0.8" fill="#38BDF8" opacity="0.3"/>
+
+  <!-- Top face (teal) -->
+  <path d="M40 18 L70 33 L40 48 L10 33 Z" fill="url(#t)"/>
+  <!-- Left face (navy) -->
+  <path d="M10 33 L40 48 L40 83 L10 68 Z" fill="url(#l)"/>
+  <!-- Right face (amber) -->
+  <path d="M40 48 L70 33 L70 68 L40 83 Z" fill="url(#r)"/>
+
+  <!-- Text: "Blocks" in navy -->
+  <text x="88" y="58" font-family="'Segoe UI', system-ui, -apple-system, sans-serif" font-size="36" font-weight="900" fill="#1E3A8A" letter-spacing="-1">Blocks</text>
+  <!-- Text: "Bank" in amber -->
+  <text x="226" y="58" font-family="'Segoe UI', system-ui, -apple-system, sans-serif" font-size="36" font-weight="900" fill="#F59E0B" letter-spacing="-1">Bank</text>
+  <!-- Tagline -->
+  <text x="88" y="76" font-family="'Segoe UI', system-ui, -apple-system, sans-serif" font-size="11" fill="#6B7280" letter-spacing="0.5">by Catchway Technology</text>
+
+  <defs>
+    <linearGradient id="t" x1="10" y1="33" x2="70" y2="48" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#22D3EE"/>
+      <stop offset="100%" stop-color="#06B6D4"/>
+    </linearGradient>
+    <linearGradient id="l" x1="10" y1="33" x2="40" y2="83" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#1E3A8A"/>
+      <stop offset="100%" stop-color="#1D4ED8"/>
+    </linearGradient>
+    <linearGradient id="r" x1="70" y1="33" x2="40" y2="83" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#F59E0B"/>
+      <stop offset="100%" stop-color="#EA580C"/>
+    </linearGradient>
+  </defs>
+</svg>

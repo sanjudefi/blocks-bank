@@ -1,9 +1,9 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import {
-  Building2,
   LayoutDashboard,
   FileText,
   Code2,
@@ -31,12 +31,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       {/* Sidebar */}
       <aside className="w-64 bg-card border-r border-border flex flex-col">
         {/* Logo */}
-        <div className="h-16 flex items-center px-6 border-b border-border">
-          <Link href="/" className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center">
-              <Building2 className="w-5 h-5 text-white" />
-            </div>
-            <span className="font-bold text-base text-foreground">Blocks Bank</span>
+        <div className="h-16 flex items-center px-5 border-b border-border">
+          <Link href="/">
+            <Image src="/logo-full.svg" alt="Blocks Bank" width={140} height={42} priority className="h-9 w-auto" />
           </Link>
         </div>
 

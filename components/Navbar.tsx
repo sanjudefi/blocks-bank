@@ -1,16 +1,17 @@
 'use client'
 
 import Link from 'next/link'
-import { Building2, Menu, X, Mail, Phone } from 'lucide-react'
+import Image from 'next/image'
+import { Menu, X, Mail, Phone } from 'lucide-react'
 import { useState } from 'react'
 
 const NAV_LINKS = [
-  { href: '#problem', label: 'Problem' },
-  { href: '#solution', label: 'Solution' },
-  { href: '#features', label: 'Features' },
-  { href: '#kyc', label: 'KYC' },
+  { href: '#problem',      label: 'Problem' },
+  { href: '#solution',     label: 'Solution' },
+  { href: '#features',     label: 'Features' },
+  { href: '#kyc',          label: 'KYC' },
   { href: '#how-it-works', label: 'How It Works' },
-  { href: '#contact', label: 'Contact' },
+  { href: '#contact',      label: 'Contact' },
 ]
 
 export default function Navbar() {
@@ -35,14 +36,8 @@ export default function Navbar() {
           <div className="flex items-center justify-between h-16">
 
             {/* Logo */}
-            <Link href="/" className="flex items-center gap-2.5 flex-shrink-0">
-              <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center shadow-sm">
-                <Building2 className="w-4.5 h-4.5 text-white" />
-              </div>
-              <div className="leading-tight">
-                <div className="font-black text-foreground text-sm leading-none">Blocks Bank</div>
-                <div className="text-[9px] text-muted-foreground leading-none mt-0.5">by Catchway</div>
-              </div>
+            <Link href="/" className="flex-shrink-0">
+              <Image src="/logo-full.svg" alt="Blocks Bank" width={150} height={45} priority className="h-10 w-auto" />
             </Link>
 
             {/* Desktop nav */}
@@ -82,6 +77,9 @@ export default function Navbar() {
         {/* Mobile menu */}
         {open && (
           <div className="md:hidden border-t border-border bg-background px-4 py-4 space-y-1">
+            <div className="pb-3 mb-2 border-b border-border">
+              <Image src="/logo-full.svg" alt="Blocks Bank" width={130} height={40} className="h-9 w-auto" />
+            </div>
             {NAV_LINKS.map((link) => (
               <a key={link.href} href={link.href} onClick={() => setOpen(false)}
                 className="block px-3 py-2.5 text-sm text-muted-foreground hover:text-foreground hover:bg-accent/50 rounded-lg transition-colors font-medium">
@@ -93,7 +91,7 @@ export default function Navbar() {
                 <button className="w-full py-2.5 rounded-xl border border-border text-sm font-medium hover:bg-accent/50 transition-colors">Sign In</button>
               </Link>
               <Link href="/signup" className="flex-1" onClick={() => setOpen(false)}>
-                <button className="w-full py-2.5 rounded-xl bg-gradient-to-r from-blue-500 to-indigo-600 text-white text-sm font-semibold transition-all">Get Started</button>
+                <button className="w-full py-2.5 rounded-xl bg-gradient-to-r from-blue-500 to-indigo-600 text-white text-sm font-semibold">Get Started</button>
               </Link>
             </div>
             <div className="pt-2 space-y-1">

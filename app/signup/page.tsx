@@ -2,9 +2,10 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import {
-  Building2, Landmark, TrendingUp, PieChart, Home,
+  Landmark, TrendingUp, PieChart, Home,
   Banknote, Globe, Grid3X3, Eye, EyeOff, Loader2,
   ArrowRight, ChevronLeft, Wallet,
 } from 'lucide-react'
@@ -136,11 +137,8 @@ export default function SignupPage() {
     <div className="min-h-screen flex">
       {/* ── Left panel ── */}
       <div className="hidden lg:flex w-2/5 bg-gradient-to-br from-slate-900 via-blue-950 to-indigo-950 flex-col justify-between p-12">
-        <Link href="/" className="flex items-center gap-2.5">
-          <div className="w-9 h-9 bg-gradient-to-br from-blue-400 to-indigo-500 rounded-xl flex items-center justify-center shadow-lg">
-            <Building2 className="w-5 h-5 text-white" />
-          </div>
-          <span className="font-bold text-xl text-white">Blocks Bank</span>
+        <Link href="/">
+          <Image src="/logo-full.svg" alt="Blocks Bank" width={160} height={48} className="h-11 w-auto brightness-0 invert" />
         </Link>
 
         <div>
@@ -176,11 +174,8 @@ export default function SignupPage() {
         <div className="w-full max-w-lg">
 
           {/* Mobile logo */}
-          <Link href="/" className="flex lg:hidden items-center gap-2 mb-8">
-            <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center">
-              <Building2 className="w-4 h-4 text-white" />
-            </div>
-            <span className="font-bold text-lg">Blocks Bank</span>
+          <Link href="/" className="flex lg:hidden mb-8">
+            <Image src="/logo-full.svg" alt="Blocks Bank" width={140} height={42} className="h-10 w-auto" />
           </Link>
 
           {/* Tabs */}
