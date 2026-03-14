@@ -1,4 +1,5 @@
 import { PrismaClient } from '@prisma/client'
+import { PrismaPg } from '@prisma/adapter-pg'
 
 declare global {
   // eslint-disable-next-line no-var
@@ -6,11 +7,18 @@ declare global {
 }
 
 function createClient(): PrismaClient {
-  const url = process.env.blocks_MONGODB_URI || process.env.DATABASE_URL
-  if (!url) throw new Error('MongoDB connection string not set. Add blocks_MONGODB_URI to environment variables.')
-  // Prisma v7 reads DATABASE_URL at runtime — set it from our custom env var
-  if (!process.env.DATABASE_URL) process.env.DATABASE_URL = url
-  return new PrismaClient()
+  const connectionString =
+    process.env.PRISMA_DATABASE_URL ||
+    process.env.POSTGRES_URL ||
+    process.env.DATABASE_URL
+  if (!connectionString) {
+    throw new Error(
+      'PostgreSQL connection string not set. Add DATABASE_URL (or POSTGRES_URL / PRISMA_DATABASE_URL) to environment variables.'
+    )
+  }
+  // Pass PoolConfig directly — avoids @types/pg version conflict with top-level pg package
+  const adapter = new PrismaPg({ connectionString })
+  return new PrismaClient({ adapter } as ConstructorParameters<typeof PrismaClient>[0])
 }
 
 function getClient(): PrismaClient {
