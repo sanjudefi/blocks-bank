@@ -153,7 +153,7 @@ export default function HomePage() {
           {/* Badge */}
           <div className="inline-flex items-center gap-2.5 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full px-5 py-2 mb-10">
             <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-            <span className="text-sm font-medium text-white/90">Powered by Catchway Technology · Ontario, CA</span>
+            <span className="text-sm font-medium text-white/90">Now in Public Beta · Institutional-Grade Tokenization</span>
           </div>
 
           {/* Headline */}
@@ -503,7 +503,7 @@ export default function HomePage() {
                 <span className="bg-gradient-to-r from-blue-500 to-indigo-600 bg-clip-text text-transparent">Know Finance</span>
               </h2>
               <p className="text-lg text-muted-foreground mb-8 leading-relaxed">
-                Blocks Bank is a product of <strong className="text-foreground">Catchway Technology</strong>, a software company based in Ontario, Canada, specialising in blockchain infrastructure for regulated financial markets.
+                We are a software company based in Ontario, Canada, specialising in blockchain infrastructure for regulated financial markets. Our team brings deep expertise across DeFi protocols and institutional compliance.
               </p>
               <div className="space-y-4">
                 {[

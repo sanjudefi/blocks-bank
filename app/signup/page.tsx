@@ -341,6 +341,34 @@ export default function SignupPage() {
                   >
                     Continue <ArrowRight className="w-4 h-4 ml-1" />
                   </Button>
+
+                  {/* Demo accounts */}
+                  <div>
+                    <div className="flex items-center gap-3 mt-2">
+                      <div className="flex-1 h-px bg-border" />
+                      <span className="text-xs text-muted-foreground">or try a demo account</span>
+                      <div className="flex-1 h-px bg-border" />
+                    </div>
+                    <div className="grid grid-cols-3 gap-2 mt-3">
+                      {DEMO_USERS.map((u) => {
+                        const OrgType = ORG_TYPES.find((o) => o.value === u.organization.type)
+                        const Icon = OrgType?.icon ?? Grid3X3
+                        return (
+                          <button key={u.email} onClick={() => handleDemo(u.email)} disabled={loading}
+                            className="flex flex-col items-center gap-1.5 p-3 rounded-xl border border-border hover:border-primary hover:bg-accent/50 transition-all text-center group disabled:opacity-50">
+                            <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${OrgType?.color ?? 'from-slate-500 to-slate-700'} flex items-center justify-center`}>
+                              <Icon className="w-4 h-4 text-white" />
+                            </div>
+                            <span className="text-xs font-medium text-foreground leading-tight">{u.name}</span>
+                            <span className="text-[10px] text-muted-foreground">{OrgType?.label}</span>
+                          </button>
+                        )
+                      })}
+                    </div>
+                    <p className="text-center text-xs text-muted-foreground mt-3">
+                      No sign up needed — instant access with pre-loaded data
+                    </p>
+                  </div>
                 </div>
               )}
 
