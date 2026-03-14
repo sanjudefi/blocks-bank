@@ -2,228 +2,151 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import DashboardLayout from '@/components/DashboardLayout'
+import WalletConnect from '@/components/WalletConnect'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import {
-  FileText,
-  Code2,
-  Users,
-  TrendingUp,
-  Plus,
-  ArrowRight,
-  Circle,
-  AlertCircle,
+  Plus, ArrowRight, Circle, FileText, Code2,
+  Rocket, TrendingUp, Users, Layers,
 } from 'lucide-react'
 import { formatNumber, formatAddress } from '@/lib/utils'
 
 interface DashboardData {
-  stats: {
-    totalInstruments: number
-    totalSupply: string
-    totalInvestors: number
-    assetsUnderManagement: string
-  }
-  instruments: Array<{
-    id: string
-    name: string
-    type: string
-    supply: string
-    symbol: string
-    status: string
-  }>
-  contracts: Array<{
-    id: string
-    tokenContract: string | null
-    registryContract: string | null
-    treasuryContract: string | null
-    complianceContract: string | null
-    instrument: { name: string } | null
-    deployedAt: string
-  }>
-  investors: Array<{
-    id: string
-    name: string
-    email: string
-    walletAddress: string | null
-    createdAt: string
-  }>
+  stats: { totalInstruments: number; totalSupply: string; totalInvestors: number; assetsUnderManagement: string }
+  instruments: Array<{ id: string; name: string; type: string; supply: number; symbol: string; status: string }>
+  contracts: Array<{ id: string; tokenContract: string | null; registryContract: string | null; treasuryContract: string | null; complianceContract: string | null; instrument: { name: string } | null; deployedAt: string }>
 }
 
-function StatusBadge({ status }: { status: string }) {
-  const variants: Record<string, { variant: 'default' | 'secondary' | 'success' | 'warning' | 'outline'; label: string }> = {
-    DRAFT: { variant: 'secondary', label: 'Draft' },
-    DEPLOYED: { variant: 'success', label: 'Deployed' },
-    ACTIVE: { variant: 'success', label: 'Active' },
-    PAUSED: { variant: 'warning', label: 'Paused' },
-    CLOSED: { variant: 'outline', label: 'Closed' },
-  }
-  const config = variants[status] || { variant: 'secondary' as const, label: status }
-  return <Badge variant={config.variant}>{config.label}</Badge>
-}
-
-function InstrumentTypeBadge({ type }: { type: string }) {
-  const labels: Record<string, string> = {
-    BOND: 'Bond',
-    FIXED_DEPOSIT: 'Fixed Deposit',
-    REAL_ESTATE_ASSET: 'Real Estate',
-    PRIVATE_CREDIT: 'Private Credit',
-    FUND_SHARES: 'Fund Shares',
-  }
-  return (
-    <Badge variant="outline" className="font-normal">
-      {labels[type] || type}
-    </Badge>
-  )
+const TYPE_LABELS: Record<string, string> = {
+  BOND: 'Bond', FIXED_DEPOSIT: 'Fixed Deposit', REAL_ESTATE_ASSET: 'Real Estate',
+  PRIVATE_CREDIT: 'Private Credit', FUND_SHARES: 'Fund Shares',
 }
 
 export default function DashboardPage() {
+  const router = useRouter()
   const [data, setData] = useState<DashboardData | null>(null)
   const [loading, setLoading] = useState(true)
+  const [userName, setUserName] = useState('')
+  const [walletSaved, setWalletSaved] = useState(false)
 
   useEffect(() => {
-    const organizationId =
-      typeof window !== 'undefined' ? localStorage.getItem('organizationId') : null
-    if (!organizationId) {
-      setLoading(false)
-      return
+    const organizationId = localStorage.getItem('organizationId')
+    const user = localStorage.getItem('user')
+    if (!organizationId) { router.push('/signup'); return }
+    if (user) {
+      try { setUserName(JSON.parse(user).name || '') } catch { /* ignore */ }
     }
-
     fetch(`/api/dashboard?organizationId=${organizationId}`)
       .then((r) => r.json())
       .then(setData)
       .catch(console.error)
       .finally(() => setLoading(false))
-  }, [])
+  }, [router])
 
-  const stats = data?.stats || {
-    totalInstruments: 0,
-    totalSupply: '0',
-    totalInvestors: 0,
-    assetsUnderManagement: '$0',
+  const handleWalletConnected = async (address: string) => {
+    const organizationId = localStorage.getItem('organizationId')
+    if (!organizationId || walletSaved) return
+    await fetch('/api/wallet', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ address, organizationId }),
+    })
+    setWalletSaved(true)
   }
+
+  const stats = data?.stats ?? { totalInstruments: 0, totalSupply: '0', totalInvestors: 0, assetsUnderManagement: '$0' }
 
   return (
     <DashboardLayout>
       {/* Header */}
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex items-start justify-between mb-8 gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Dashboard</h1>
+          <h1 className="text-2xl font-bold text-foreground">
+            {userName ? `Welcome, ${userName.split(' ')[0]} 👋` : 'Dashboard'}
+          </h1>
           <p className="text-muted-foreground text-sm mt-1">
-            Overview of your tokenized financial instruments
+            Deploy and manage your tokenized financial instruments
           </p>
         </div>
         <Link href="/dashboard/instruments/create">
-          <Button className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white border-0 shadow-md">
+          <Button className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white border-0 shadow-md whitespace-nowrap">
             <Plus className="w-4 h-4 mr-2" />
-            Create Instrument
+            New Instrument
           </Button>
         </Link>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        {[
-          {
-            title: 'Total Instruments',
-            value: loading ? '—' : formatNumber(stats.totalInstruments),
-            icon: FileText,
-            color: 'from-blue-500 to-blue-600',
-            bg: 'from-blue-50 to-blue-100/50 dark:from-blue-900/20 dark:to-blue-900/10',
-          },
-          {
-            title: 'Total Token Supply',
-            value: loading ? '—' : stats.totalSupply,
-            icon: TrendingUp,
-            color: 'from-indigo-500 to-indigo-600',
-            bg: 'from-indigo-50 to-indigo-100/50 dark:from-indigo-900/20 dark:to-indigo-900/10',
-          },
-          {
-            title: 'Investors',
-            value: loading ? '—' : formatNumber(stats.totalInvestors),
-            icon: Users,
-            color: 'from-violet-500 to-violet-600',
-            bg: 'from-violet-50 to-violet-100/50 dark:from-violet-900/20 dark:to-violet-900/10',
-          },
-          {
-            title: 'Assets Under Management',
-            value: loading ? '—' : stats.assetsUnderManagement,
-            icon: TrendingUp,
-            color: 'from-emerald-500 to-emerald-600',
-            bg: 'from-emerald-50 to-emerald-100/50 dark:from-emerald-900/20 dark:to-emerald-900/10',
-          },
-        ].map((stat) => {
-          const Icon = stat.icon
-          return (
-            <Card key={stat.title} className={`border-border bg-gradient-to-br ${stat.bg}`}>
-              <CardContent className="p-5">
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-sm font-medium text-muted-foreground">{stat.title}</span>
-                  <div className={`w-9 h-9 rounded-xl bg-gradient-to-br ${stat.color} flex items-center justify-center shadow-sm`}>
-                    <Icon className="w-4 h-4 text-white" />
-                  </div>
-                </div>
-                <div className="text-2xl font-bold text-foreground">{stat.value}</div>
-              </CardContent>
-            </Card>
-          )
-        })}
-      </div>
-
       <div className="grid lg:grid-cols-3 gap-6">
-        {/* Instruments */}
+
+        {/* Main column */}
         <div className="lg:col-span-2 space-y-6">
+
+          {/* Stats */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            {[
+              { label: 'Instruments', value: stats.totalInstruments, icon: Layers, color: 'from-blue-500 to-blue-600' },
+              { label: 'Token Supply', value: stats.totalSupply, icon: TrendingUp, color: 'from-indigo-500 to-indigo-600' },
+              { label: 'Investors', value: stats.totalInvestors, icon: Users, color: 'from-violet-500 to-violet-600' },
+              { label: 'AUM', value: stats.assetsUnderManagement, icon: TrendingUp, color: 'from-emerald-500 to-emerald-600' },
+            ].map((s) => {
+              const Icon = s.icon
+              return (
+                <Card key={s.label} className="border-border">
+                  <CardContent className="p-4">
+                    <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${s.color} flex items-center justify-center mb-2`}>
+                      <Icon className="w-4 h-4 text-white" />
+                    </div>
+                    <div className="text-xl font-bold text-foreground">{loading ? '—' : (typeof s.value === 'number' ? formatNumber(s.value) : s.value)}</div>
+                    <div className="text-xs text-muted-foreground">{s.label}</div>
+                  </CardContent>
+                </Card>
+              )
+            })}
+          </div>
+
+          {/* Instruments */}
           <Card className="border-border">
-            <CardHeader className="flex flex-row items-center justify-between pb-4">
+            <CardHeader className="flex flex-row items-center justify-between pb-3">
               <div>
-                <CardTitle className="text-lg">Instruments</CardTitle>
-                <CardDescription>Your tokenized financial instruments</CardDescription>
+                <CardTitle className="text-base">Instruments</CardTitle>
+                <CardDescription className="text-xs">Your deployed tokenized products</CardDescription>
               </div>
               <Link href="/dashboard/instruments">
-                <Button variant="ghost" size="sm" className="text-primary">
-                  View all <ArrowRight className="w-4 h-4 ml-1" />
+                <Button variant="ghost" size="sm" className="text-primary text-xs h-7">
+                  All <ArrowRight className="w-3 h-3 ml-1" />
                 </Button>
               </Link>
             </CardHeader>
             <CardContent>
               {loading ? (
-                <div className="space-y-3">
-                  {[1, 2, 3].map((i) => (
-                    <div key={i} className="h-14 rounded-lg bg-muted animate-pulse" />
-                  ))}
-                </div>
-              ) : data?.instruments && data.instruments.length > 0 ? (
+                <div className="space-y-2">{[1, 2].map((i) => <div key={i} className="h-12 rounded-lg bg-muted animate-pulse" />)}</div>
+              ) : data?.instruments.length ? (
                 <div className="space-y-2">
-                  {data.instruments.map((instrument) => (
-                    <div
-                      key={instrument.id}
-                      className="flex items-center justify-between p-3 rounded-lg border border-border hover:bg-accent/50 transition-colors"
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white text-xs font-bold">
-                          {instrument.symbol.slice(0, 2)}
-                        </div>
-                        <div>
-                          <p className="font-medium text-sm text-foreground">{instrument.name}</p>
-                          <p className="text-xs text-muted-foreground">{formatNumber(Number(instrument.supply))} tokens</p>
-                        </div>
+                  {data.instruments.map((inst) => (
+                    <div key={inst.id} className="flex items-center gap-3 p-3 rounded-xl border border-border hover:bg-accent/30 transition-colors">
+                      <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
+                        {inst.symbol.slice(0, 2)}
                       </div>
-                      <div className="flex items-center gap-2">
-                        <InstrumentTypeBadge type={instrument.type} />
-                        <StatusBadge status={instrument.status} />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-semibold text-foreground truncate">{inst.name}</p>
+                        <p className="text-xs text-muted-foreground">{formatNumber(inst.supply)} tokens · {TYPE_LABELS[inst.type] ?? inst.type}</p>
                       </div>
+                      <Badge variant={inst.status === 'DEPLOYED' || inst.status === 'ACTIVE' ? 'success' : 'secondary'} className="text-xs">
+                        {inst.status}
+                      </Badge>
                     </div>
                   ))}
                 </div>
               ) : (
-                <div className="text-center py-12">
-                  <FileText className="w-12 h-12 text-muted-foreground/30 mx-auto mb-3" />
-                  <p className="text-muted-foreground text-sm mb-4">No instruments yet</p>
+                <div className="text-center py-10">
+                  <FileText className="w-10 h-10 text-muted-foreground/20 mx-auto mb-3" />
+                  <p className="text-sm text-muted-foreground mb-3">No instruments yet</p>
                   <Link href="/dashboard/instruments/create">
                     <Button size="sm" className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white border-0">
-                      <Plus className="w-4 h-4 mr-1" />
-                      Create Instrument
+                      <Rocket className="w-4 h-4 mr-1.5" /> Deploy First Instrument
                     </Button>
                   </Link>
                 </div>
@@ -233,53 +156,47 @@ export default function DashboardPage() {
 
           {/* Contracts */}
           <Card className="border-border">
-            <CardHeader className="flex flex-row items-center justify-between pb-4">
+            <CardHeader className="flex flex-row items-center justify-between pb-3">
               <div>
-                <CardTitle className="text-lg">Smart Contracts</CardTitle>
-                <CardDescription>Deployed contract addresses</CardDescription>
+                <CardTitle className="text-base">Smart Contracts</CardTitle>
+                <CardDescription className="text-xs">Deployed on-chain contract addresses</CardDescription>
               </div>
               <Link href="/dashboard/contracts">
-                <Button variant="ghost" size="sm" className="text-primary">
-                  View all <ArrowRight className="w-4 h-4 ml-1" />
+                <Button variant="ghost" size="sm" className="text-primary text-xs h-7">
+                  All <ArrowRight className="w-3 h-3 ml-1" />
                 </Button>
               </Link>
             </CardHeader>
             <CardContent>
               {loading ? (
+                <div className="space-y-2">{[1].map((i) => <div key={i} className="h-20 rounded-lg bg-muted animate-pulse" />)}</div>
+              ) : data?.contracts.length ? (
                 <div className="space-y-3">
-                  {[1, 2].map((i) => (
-                    <div key={i} className="h-24 rounded-lg bg-muted animate-pulse" />
-                  ))}
-                </div>
-              ) : data?.contracts && data.contracts.length > 0 ? (
-                <div className="space-y-3">
-                  {data.contracts.slice(0, 2).map((contract) => (
-                    <div key={contract.id} className="p-4 rounded-lg border border-border space-y-2">
+                  {data.contracts.slice(0, 2).map((c) => (
+                    <div key={c.id} className="p-3 rounded-xl border border-border space-y-1.5">
                       <div className="flex items-center justify-between">
-                        <p className="font-medium text-sm">{contract.instrument?.name || 'Unknown Instrument'}</p>
-                        <Badge variant="success">Deployed</Badge>
+                        <p className="text-sm font-medium text-foreground">{c.instrument?.name ?? 'Instrument'}</p>
+                        <Badge variant="success" className="text-[10px]">Live</Badge>
                       </div>
-                      <div className="grid grid-cols-2 gap-2">
-                        {[
-                          { label: 'Token', value: contract.tokenContract },
-                          { label: 'Registry', value: contract.registryContract },
-                          { label: 'Treasury', value: contract.treasuryContract },
-                          { label: 'Compliance', value: contract.complianceContract },
-                        ].map((c) => c.value && (
-                          <div key={c.label} className="flex items-center gap-2">
-                            <Circle className="w-2 h-2 text-green-500 fill-green-500 flex-shrink-0" />
-                            <span className="text-xs text-muted-foreground">{c.label}:</span>
-                            <code className="text-xs font-mono text-foreground truncate">{formatAddress(c.value)}</code>
-                          </div>
-                        ))}
-                      </div>
+                      {[
+                        { label: 'Token', val: c.tokenContract },
+                        { label: 'Registry', val: c.registryContract },
+                        { label: 'Treasury', val: c.treasuryContract },
+                        { label: 'Compliance', val: c.complianceContract },
+                      ].filter(x => x.val).map(({ label, val }) => (
+                        <div key={label} className="flex items-center gap-2">
+                          <Circle className="w-1.5 h-1.5 fill-green-500 text-green-500 flex-shrink-0" />
+                          <span className="text-xs text-muted-foreground w-16 flex-shrink-0">{label}</span>
+                          <code className="text-xs font-mono text-foreground">{formatAddress(val!)}</code>
+                        </div>
+                      ))}
                     </div>
                   ))}
                 </div>
               ) : (
-                <div className="text-center py-12">
-                  <Code2 className="w-12 h-12 text-muted-foreground/30 mx-auto mb-3" />
-                  <p className="text-muted-foreground text-sm">No contracts deployed yet</p>
+                <div className="text-center py-10">
+                  <Code2 className="w-10 h-10 text-muted-foreground/20 mx-auto mb-3" />
+                  <p className="text-sm text-muted-foreground">No contracts deployed yet</p>
                   <p className="text-xs text-muted-foreground mt-1">Create an instrument to deploy contracts</p>
                 </div>
               )}
@@ -287,77 +204,68 @@ export default function DashboardPage() {
           </Card>
         </div>
 
-        {/* Investors */}
-        <div>
-          <Card className="border-border h-full">
-            <CardHeader className="pb-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle className="text-lg">Investors</CardTitle>
-                  <CardDescription>Connected investors</CardDescription>
-                </div>
-                <Users className="w-5 h-5 text-muted-foreground" />
-              </div>
+        {/* Right sidebar — Wallet */}
+        <div className="space-y-4">
+          <Card className="border-border">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base">Wallet Connection</CardTitle>
+              <CardDescription className="text-xs">
+                Connect MetaMask to sign transactions and deploy contracts
+              </CardDescription>
             </CardHeader>
             <CardContent>
-              {loading ? (
-                <div className="space-y-3">
-                  {[1, 2, 3, 4].map((i) => (
-                    <div key={i} className="h-12 rounded-lg bg-muted animate-pulse" />
-                  ))}
-                </div>
-              ) : data?.investors && data.investors.length > 0 ? (
-                <div className="space-y-2">
-                  {data.investors.map((investor) => (
-                    <div key={investor.id} className="flex items-center gap-3 p-2 rounded-lg hover:bg-accent/50 transition-colors">
-                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
-                        {investor.name.slice(0, 2).toUpperCase()}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-foreground truncate">{investor.name}</p>
-                        {investor.walletAddress && (
-                          <p className="text-xs text-muted-foreground font-mono">{formatAddress(investor.walletAddress)}</p>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-12">
-                  <Users className="w-12 h-12 text-muted-foreground/30 mx-auto mb-3" />
-                  <p className="text-muted-foreground text-sm">No investors yet</p>
-                  <p className="text-xs text-muted-foreground mt-1">Investors will appear here once they connect</p>
-                </div>
-              )}
+              <WalletConnect onConnected={handleWalletConnected} />
+            </CardContent>
+          </Card>
+
+          {/* Quick actions */}
+          <Card className="border-border">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base">Quick Actions</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              {[
+                { label: 'Deploy New Instrument', href: '/dashboard/instruments/create', icon: Rocket, primary: true },
+                { label: 'View All Instruments', href: '/dashboard/instruments', icon: FileText, primary: false },
+                { label: 'View Contracts', href: '/dashboard/contracts', icon: Code2, primary: false },
+              ].map((action) => {
+                const Icon = action.icon
+                return (
+                  <Link key={action.href} href={action.href}>
+                    <button className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
+                      action.primary
+                        ? 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white hover:from-blue-600 hover:to-indigo-700 shadow-sm'
+                        : 'border border-border hover:bg-accent/50 text-foreground'
+                    }`}>
+                      <Icon className="w-4 h-4 flex-shrink-0" />
+                      {action.label}
+                    </button>
+                  </Link>
+                )
+              })}
+            </CardContent>
+          </Card>
+
+          {/* Alchemy network status */}
+          <Card className="border-border">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                <span className="text-xs font-medium text-foreground">Network Status</span>
+              </div>
+              <div className="space-y-1.5">
+                {['Ethereum', 'Polygon', 'Base'].map((net) => (
+                  <div key={net} className="flex items-center justify-between">
+                    <span className="text-xs text-muted-foreground">{net}</span>
+                    <span className="text-xs text-green-600 font-medium">Operational</span>
+                  </div>
+                ))}
+              </div>
+              <p className="text-[10px] text-muted-foreground mt-2">Powered by Alchemy</p>
             </CardContent>
           </Card>
         </div>
       </div>
-
-      {/* Getting started banner (shown when no instruments) */}
-      {!loading && (!data?.instruments || data.instruments.length === 0) && (
-        <Card className="mt-6 border-border bg-gradient-to-br from-blue-50 to-indigo-50/50 dark:from-blue-900/20 dark:to-indigo-900/10 border-blue-200 dark:border-blue-800">
-          <CardContent className="p-6">
-            <div className="flex items-start gap-4">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center flex-shrink-0">
-                <AlertCircle className="w-5 h-5 text-white" />
-              </div>
-              <div className="flex-1">
-                <h3 className="font-semibold text-foreground mb-1">Get started with your first instrument</h3>
-                <p className="text-sm text-muted-foreground mb-4">
-                  Create your first tokenized financial instrument to begin issuing tokens to investors.
-                </p>
-                <Link href="/dashboard/instruments/create">
-                  <Button size="sm" className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white border-0">
-                    Create Instrument
-                    <ArrowRight className="w-4 h-4 ml-1" />
-                  </Button>
-                </Link>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
     </DashboardLayout>
   )
 }

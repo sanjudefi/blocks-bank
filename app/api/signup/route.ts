@@ -5,39 +5,24 @@ import { hashPassword } from '@/lib/auth'
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
-    const { organizationName, email, password, country, organizationType } = body
+    const { organizationName, email, password, organizationType } = body
 
-    if (!organizationName || !email || !password || !country || !organizationType) {
-      return NextResponse.json(
-        { error: 'All fields are required.' },
-        { status: 400 }
-      )
+    if (!organizationName || !email || !password || !organizationType) {
+      return NextResponse.json({ error: 'All fields are required.' }, { status: 400 })
     }
-
     if (password.length < 8) {
-      return NextResponse.json(
-        { error: 'Password must be at least 8 characters.' },
-        { status: 400 }
-      )
+      return NextResponse.json({ error: 'Password must be at least 8 characters.' }, { status: 400 })
     }
 
-    // Check if email already exists
     const existingUser = await prisma.user.findUnique({ where: { email } })
     if (existingUser) {
-      return NextResponse.json(
-        { error: 'An account with this email already exists.' },
-        { status: 409 }
-      )
+      return NextResponse.json({ error: 'An account with this email already exists.' }, { status: 409 })
     }
 
     const hashedPassword = await hashPassword(password)
 
     const organization = await prisma.organization.create({
-      data: {
-        name: organizationName,
-        country,
-        type: organizationType,
-      },
+      data: { name: organizationName, country: 'Unknown', type: organizationType },
     })
 
     const user = await prisma.user.create({
@@ -47,20 +32,13 @@ export async function POST(req: NextRequest) {
         name: organizationName,
         organizationId: organization.id,
       },
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        organizationId: true,
-      },
+      select: { id: true, email: true, name: true, organizationId: true },
     })
 
     return NextResponse.json({ user, organization }, { status: 201 })
-  } catch (error) {
-    console.error('Signup error:', error)
-    return NextResponse.json(
-      { error: 'Internal server error.' },
-      { status: 500 }
-    )
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err)
+    console.error('Signup error:', message)
+    return NextResponse.json({ error: `Signup failed: ${message}` }, { status: 500 })
   }
 }

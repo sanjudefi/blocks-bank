@@ -3,214 +3,358 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { Building2, Eye, EyeOff, Loader2 } from 'lucide-react'
+import {
+  Building2, Landmark, TrendingUp, PieChart, Home,
+  Banknote, Globe, Grid3X3, Eye, EyeOff, Loader2,
+  ArrowRight, ChevronLeft,
+} from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
+import { DEMO_USERS } from '@/lib/demo-users'
 
-const organizationTypes = [
-  { value: 'BANK', label: 'Bank' },
-  { value: 'HEDGE_FUND', label: 'Hedge Fund' },
-  { value: 'ASSET_MANAGER', label: 'Asset Manager' },
-  { value: 'REAL_ESTATE_COMPANY', label: 'Real Estate Company' },
-  { value: 'PRIVATE_CREDIT_FIRM', label: 'Private Credit Firm' },
-  { value: 'INVESTMENT_PLATFORM', label: 'Investment Platform' },
-  { value: 'OTHER', label: 'Other' },
+const ORG_TYPES = [
+  { value: 'BANK',                 label: 'Bank',              icon: Landmark,    color: 'from-blue-500 to-blue-700' },
+  { value: 'HEDGE_FUND',           label: 'Hedge Fund',        icon: TrendingUp,  color: 'from-emerald-500 to-emerald-700' },
+  { value: 'ASSET_MANAGER',        label: 'Asset Manager',     icon: PieChart,    color: 'from-violet-500 to-violet-700' },
+  { value: 'REAL_ESTATE_COMPANY',  label: 'Real Estate',       icon: Home,        color: 'from-orange-500 to-orange-700' },
+  { value: 'PRIVATE_CREDIT_FIRM',  label: 'Private Credit',    icon: Banknote,    color: 'from-rose-500 to-rose-700' },
+  { value: 'INVESTMENT_PLATFORM',  label: 'Investment Platform', icon: Globe,     color: 'from-cyan-500 to-cyan-700' },
+  { value: 'OTHER',                label: 'Other',             icon: Grid3X3,     color: 'from-slate-500 to-slate-700' },
 ]
 
-const countries = [
-  'United States', 'United Kingdom', 'Germany', 'France', 'Switzerland',
-  'Singapore', 'Hong Kong', 'Japan', 'Australia', 'Canada', 'Netherlands',
-  'Luxembourg', 'Cayman Islands', 'British Virgin Islands', 'Other',
-]
+type Tab = 'login' | 'signup'
+type Step = 1 | 2
 
 export default function SignupPage() {
   const router = useRouter()
-  const [showPassword, setShowPassword] = useState(false)
+  const [tab, setTab] = useState<Tab>('signup')
+  const [step, setStep] = useState<Step>(1)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
-  const [form, setForm] = useState({
-    organizationName: '',
-    email: '',
-    password: '',
-    country: '',
-    organizationType: '',
-  })
+  const [showPw, setShowPw] = useState(false)
 
-  const handleChange = (field: string, value: string) => {
-    setForm((prev) => ({ ...prev, [field]: value }))
-    setError('')
+  // Signup form state
+  const [orgType, setOrgType] = useState('')
+  const [orgName, setOrgName] = useState('')
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+
+  // Login form state
+  const [loginEmail, setLoginEmail] = useState('')
+  const [loginPassword, setLoginPassword] = useState('')
+
+  const saveSession = (data: { user: object; organization: object }) => {
+    localStorage.setItem('user', JSON.stringify(data.user))
+    localStorage.setItem('organizationId', (data.organization as { id: string }).id)
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  /* ── Login ── */
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
-    setLoading(true)
-    setError('')
+    setLoading(true); setError('')
+    try {
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: loginEmail, password: loginPassword }),
+      })
+      const data = await res.json()
+      if (!res.ok) { setError(data.error); return }
+      saveSession(data)
+      router.push('/dashboard')
+    } catch { setError('Network error. Please try again.') }
+    finally { setLoading(false) }
+  }
 
+  /* ── Demo login ── */
+  const handleDemo = async (demoEmail: string) => {
+    setLoading(true); setError('')
+    try {
+      const res = await fetch('/api/auth/demo', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: demoEmail }),
+      })
+      const data = await res.json()
+      if (!res.ok) { setError(data.error); return }
+      localStorage.setItem('user', JSON.stringify({ id: data.id, email: data.email, name: data.name, organizationId: data.organizationId }))
+      localStorage.setItem('organizationId', data.organizationId)
+      router.push('/dashboard')
+    } catch { setError('Failed to load demo.') }
+    finally { setLoading(false) }
+  }
+
+  /* ── Signup ── */
+  const handleSignup = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setLoading(true); setError('')
     try {
       const res = await fetch('/api/signup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form),
+        body: JSON.stringify({ organizationName: orgName, email, password, organizationType: orgType }),
       })
-
       const data = await res.json()
-
-      if (!res.ok) {
-        setError(data.error || 'Signup failed. Please try again.')
-        return
-      }
-
-      // Store minimal session data
-      localStorage.setItem('user', JSON.stringify(data.user))
-      localStorage.setItem('organizationId', data.organization.id)
-
+      if (!res.ok) { setError(data.error); return }
+      saveSession(data)
       router.push('/onboarding')
-    } catch {
-      setError('Network error. Please try again.')
-    } finally {
-      setLoading(false)
-    }
+    } catch { setError('Network error. Please try again.') }
+    finally { setLoading(false) }
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-indigo-50/50 to-background dark:from-blue-950/30 dark:via-indigo-950/20 dark:to-background p-4">
-      <div className="w-full max-w-md">
-        {/* Logo */}
-        <div className="flex items-center justify-center gap-2 mb-8">
-          <Link href="/" className="flex items-center gap-2">
-            <div className="w-9 h-9 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg">
-              <Building2 className="w-5 h-5 text-white" />
-            </div>
-            <span className="font-bold text-xl text-foreground">Blocks Bank</span>
-          </Link>
+    <div className="min-h-screen flex">
+      {/* ── Left panel ── */}
+      <div className="hidden lg:flex w-2/5 bg-gradient-to-br from-slate-900 via-blue-950 to-indigo-950 flex-col justify-between p-12">
+        <Link href="/" className="flex items-center gap-2.5">
+          <div className="w-9 h-9 bg-gradient-to-br from-blue-400 to-indigo-500 rounded-xl flex items-center justify-center shadow-lg">
+            <Building2 className="w-5 h-5 text-white" />
+          </div>
+          <span className="font-bold text-xl text-white">Blocks Bank</span>
+        </Link>
+
+        <div>
+          <h2 className="text-4xl font-bold text-white leading-tight mb-4">
+            Tokenize financial assets<br />
+            <span className="text-blue-400">in minutes.</span>
+          </h2>
+          <p className="text-blue-200/70 text-base leading-relaxed mb-10">
+            Issue bonds, deposits, and fund shares as blockchain tokens —
+            with automated compliance, custody, and settlement.
+          </p>
+          <div className="space-y-4">
+            {[
+              { icon: '⚡', text: 'Deploy smart contracts instantly' },
+              { icon: '🔒', text: 'Built-in compliance & KYC controls' },
+              { icon: '🌐', text: 'Ethereum, Polygon, Base & more' },
+            ].map((f) => (
+              <div key={f.text} className="flex items-center gap-3">
+                <span className="text-lg">{f.icon}</span>
+                <span className="text-blue-100/80 text-sm">{f.text}</span>
+              </div>
+            ))}
+          </div>
         </div>
 
-        <Card className="border-border shadow-xl">
-          <CardHeader className="text-center">
-            <CardTitle className="text-2xl font-bold">Create your account</CardTitle>
-            <CardDescription>
-              Set up your organization to start tokenizing financial assets.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              {error && (
-                <div className="p-3 rounded-lg bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 text-sm text-red-600 dark:text-red-400">
-                  {error}
+        <p className="text-blue-300/40 text-xs">
+          © {new Date().getFullYear()} Blocks Bank — Open Financial Infrastructure
+        </p>
+      </div>
+
+      {/* ── Right panel ── */}
+      <div className="flex-1 flex flex-col items-center justify-center p-6 lg:p-12 bg-background overflow-y-auto">
+        <div className="w-full max-w-lg">
+
+          {/* Mobile logo */}
+          <Link href="/" className="flex lg:hidden items-center gap-2 mb-8">
+            <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center">
+              <Building2 className="w-4 h-4 text-white" />
+            </div>
+            <span className="font-bold text-lg">Blocks Bank</span>
+          </Link>
+
+          {/* Tabs */}
+          <div className="flex bg-muted rounded-xl p-1 mb-8">
+            {(['login', 'signup'] as Tab[]).map((t) => (
+              <button
+                key={t}
+                onClick={() => { setTab(t); setError(''); setStep(1) }}
+                className={`flex-1 py-2.5 rounded-lg text-sm font-medium capitalize transition-all ${
+                  tab === t
+                    ? 'bg-background text-foreground shadow-sm'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                {t === 'login' ? 'Sign In' : 'Create Account'}
+              </button>
+            ))}
+          </div>
+
+          {error && (
+            <div className="mb-4 p-3 rounded-lg bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 text-sm text-red-600 dark:text-red-400">
+              {error}
+            </div>
+          )}
+
+          {/* ══ LOGIN ══ */}
+          {tab === 'login' && (
+            <div className="space-y-5">
+              <div>
+                <h1 className="text-2xl font-bold text-foreground">Welcome back</h1>
+                <p className="text-muted-foreground text-sm mt-1">Sign in to your organization</p>
+              </div>
+
+              <form onSubmit={handleLogin} className="space-y-4">
+                <div className="space-y-1.5">
+                  <Label>Email</Label>
+                  <Input type="email" placeholder="admin@yourorg.com" value={loginEmail}
+                    onChange={(e) => setLoginEmail(e.target.value)} required />
+                </div>
+                <div className="space-y-1.5">
+                  <Label>Password</Label>
+                  <div className="relative">
+                    <Input type={showPw ? 'text' : 'password'} placeholder="••••••••"
+                      value={loginPassword} onChange={(e) => setLoginPassword(e.target.value)}
+                      required className="pr-10" />
+                    <button type="button" onClick={() => setShowPw(!showPw)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+                      {showPw ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
+                </div>
+                <Button type="submit" className="w-full bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white border-0 h-11" disabled={loading}>
+                  {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Sign In'}
+                </Button>
+              </form>
+
+              {/* Demo accounts */}
+              <div>
+                <div className="flex items-center gap-3 my-4">
+                  <div className="flex-1 h-px bg-border" />
+                  <span className="text-xs text-muted-foreground">Demo accounts</span>
+                  <div className="flex-1 h-px bg-border" />
+                </div>
+                <div className="grid grid-cols-3 gap-2">
+                  {DEMO_USERS.map((u) => {
+                    const OrgType = ORG_TYPES.find((o) => o.value === u.organization.type)
+                    const Icon = OrgType?.icon ?? Grid3X3
+                    return (
+                      <button key={u.email} onClick={() => handleDemo(u.email)} disabled={loading}
+                        className="flex flex-col items-center gap-1.5 p-3 rounded-xl border border-border hover:border-primary hover:bg-accent/50 transition-all text-center group disabled:opacity-50">
+                        <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${OrgType?.color ?? 'from-slate-500 to-slate-700'} flex items-center justify-center`}>
+                          <Icon className="w-4 h-4 text-white" />
+                        </div>
+                        <span className="text-xs font-medium text-foreground leading-tight">{u.name}</span>
+                        <span className="text-[10px] text-muted-foreground">{OrgType?.label}</span>
+                      </button>
+                    )
+                  })}
+                </div>
+                <p className="text-center text-xs text-muted-foreground mt-3">
+                  Password for all demo accounts: <code className="bg-muted px-1.5 py-0.5 rounded text-foreground">Demo1234!</code>
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* ══ SIGNUP ══ */}
+          {tab === 'signup' && (
+            <div>
+              {/* Step 1 — Org type */}
+              {step === 1 && (
+                <div className="space-y-6">
+                  <div>
+                    <h1 className="text-2xl font-bold text-foreground">What type of organization?</h1>
+                    <p className="text-muted-foreground text-sm mt-1">
+                      Select the category that best describes your institution.
+                    </p>
+                  </div>
+
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                    {ORG_TYPES.map((type) => {
+                      const Icon = type.icon
+                      const selected = orgType === type.value
+                      return (
+                        <button
+                          key={type.value}
+                          onClick={() => setOrgType(type.value)}
+                          className={`relative flex flex-col items-center gap-3 p-5 rounded-2xl border-2 transition-all text-center group ${
+                            selected
+                              ? 'border-primary bg-primary/5 shadow-md shadow-primary/10'
+                              : 'border-border hover:border-primary/50 hover:bg-accent/40'
+                          }`}
+                        >
+                          <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${type.color} flex items-center justify-center shadow-sm group-hover:scale-105 transition-transform`}>
+                            <Icon className="w-6 h-6 text-white" />
+                          </div>
+                          <span className="text-sm font-semibold text-foreground leading-tight">{type.label}</span>
+                          {selected && (
+                            <div className="absolute top-2 right-2 w-5 h-5 rounded-full bg-primary flex items-center justify-center">
+                              <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                              </svg>
+                            </div>
+                          )}
+                        </button>
+                      )
+                    })}
+                  </div>
+
+                  <Button
+                    onClick={() => { if (orgType) { setStep(2); setError('') } else setError('Please select an organization type.') }}
+                    className="w-full bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white border-0 h-11"
+                  >
+                    Continue <ArrowRight className="w-4 h-4 ml-1" />
+                  </Button>
                 </div>
               )}
 
-              <div className="space-y-1.5">
-                <Label htmlFor="organizationName">Organization Name</Label>
-                <Input
-                  id="organizationName"
-                  placeholder="Acme Capital"
-                  value={form.organizationName}
-                  onChange={(e) => handleChange('organizationName', e.target.value)}
-                  required
-                />
-              </div>
+              {/* Step 2 — Account details */}
+              {step === 2 && (
+                <div className="space-y-5">
+                  <div className="flex items-center gap-3">
+                    <button onClick={() => setStep(1)}
+                      className="w-8 h-8 rounded-lg border border-border flex items-center justify-center hover:bg-accent transition-colors">
+                      <ChevronLeft className="w-4 h-4" />
+                    </button>
+                    <div>
+                      <h1 className="text-2xl font-bold text-foreground">Create your account</h1>
+                      <p className="text-muted-foreground text-sm mt-0.5">
+                        {ORG_TYPES.find((o) => o.value === orgType)?.label} account
+                      </p>
+                    </div>
+                  </div>
 
-              <div className="space-y-1.5">
-                <Label htmlFor="email">Email Address</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="admin@acmecapital.com"
-                  value={form.email}
-                  onChange={(e) => handleChange('email', e.target.value)}
-                  required
-                />
-              </div>
+                  {/* Selected org type badge */}
+                  <div className="flex items-center gap-2 p-3 rounded-xl bg-muted/60 border border-border">
+                    {(() => {
+                      const t = ORG_TYPES.find((o) => o.value === orgType)
+                      const Icon = t?.icon ?? Grid3X3
+                      return (
+                        <>
+                          <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${t?.color} flex items-center justify-center`}>
+                            <Icon className="w-4 h-4 text-white" />
+                          </div>
+                          <span className="text-sm font-medium text-foreground">{t?.label}</span>
+                        </>
+                      )
+                    })()}
+                  </div>
 
-              <div className="space-y-1.5">
-                <Label htmlFor="password">Password</Label>
-                <div className="relative">
-                  <Input
-                    id="password"
-                    type={showPassword ? 'text' : 'password'}
-                    placeholder="Create a strong password"
-                    value={form.password}
-                    onChange={(e) => handleChange('password', e.target.value)}
-                    required
-                    minLength={8}
-                    className="pr-10"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                  >
-                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                  </button>
+                  <form onSubmit={handleSignup} className="space-y-4">
+                    <div className="space-y-1.5">
+                      <Label>Organization Name</Label>
+                      <Input placeholder="First National Bank" value={orgName}
+                        onChange={(e) => setOrgName(e.target.value)} required />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label>Email Address</Label>
+                      <Input type="email" placeholder="admin@yourorg.com" value={email}
+                        onChange={(e) => setEmail(e.target.value)} required />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label>Password</Label>
+                      <div className="relative">
+                        <Input type={showPw ? 'text' : 'password'} placeholder="Min. 8 characters"
+                          value={password} onChange={(e) => setPassword(e.target.value)}
+                          required minLength={8} className="pr-10" />
+                        <button type="button" onClick={() => setShowPw(!showPw)}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+                          {showPw ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                        </button>
+                      </div>
+                    </div>
+                    <Button type="submit" disabled={loading}
+                      className="w-full bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white border-0 h-11">
+                      {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Create Account'}
+                    </Button>
+                  </form>
                 </div>
-              </div>
-
-              <div className="space-y-1.5">
-                <Label>Country</Label>
-                <Select onValueChange={(v) => handleChange('country', v)} required>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select country" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {countries.map((country) => (
-                      <SelectItem key={country} value={country}>
-                        {country}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-1.5">
-                <Label>Organization Type</Label>
-                <Select onValueChange={(v) => handleChange('organizationType', v)} required>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select organization type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {organizationTypes.map((type) => (
-                      <SelectItem key={type.value} value={type.value}>
-                        {type.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <Button
-                type="submit"
-                className="w-full bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white border-0 h-10 font-medium shadow-md"
-                disabled={loading}
-              >
-                {loading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-                {loading ? 'Creating account...' : 'Create Account'}
-              </Button>
-
-              <p className="text-center text-sm text-muted-foreground pt-2">
-                Already have an account?{' '}
-                <Link href="/dashboard" className="text-primary hover:underline font-medium">
-                  Sign in
-                </Link>
-              </p>
-            </form>
-          </CardContent>
-        </Card>
-
-        <p className="text-center text-xs text-muted-foreground mt-6">
-          By creating an account, you agree to our{' '}
-          <Link href="#" className="hover:underline">Terms of Service</Link> and{' '}
-          <Link href="#" className="hover:underline">Privacy Policy</Link>.
-        </p>
+              )}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   )

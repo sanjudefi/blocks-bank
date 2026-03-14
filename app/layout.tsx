@@ -1,20 +1,19 @@
 import type { Metadata } from 'next'
 import './globals.css'
+import { Providers } from './providers'
 
 export const metadata: Metadata = {
   title: 'Blocks Bank – Tokenized Financial Infrastructure',
   description:
-    'Blocks Bank is an open infrastructure platform that enables financial institutions to issue tokenized financial instruments such as bonds, funds, and real estate assets.',
+    'Open infrastructure platform for financial institutions to issue tokenized bonds, funds, and real estate assets on blockchain.',
 }
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode
-}>) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body className="antialiased font-sans">{children}</body>
+      <body className="antialiased font-sans">
+        <Providers>{children}</Providers>
+      </body>
     </html>
   )
 }
