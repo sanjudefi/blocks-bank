@@ -34,7 +34,7 @@ export async function GET(req: NextRequest) {
 
     // Calculate total token supply
     const totalSupply = instruments.reduce(
-      (acc, instrument) => acc + Number(instrument.supply),
+      (acc: number, instrument) => acc + instrument.supply,
       0
     )
 
@@ -51,12 +51,7 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json({
       stats,
-      instruments: instruments.map((i) => ({
-        ...i,
-        supply: String(i.supply),
-        minimumInvestment: i.minimumInvestment?.toString() || null,
-        interestRate: i.interestRate?.toString() || null,
-      })),
+      instruments,
       contracts,
       investors,
     })

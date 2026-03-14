@@ -1,20 +1,17 @@
 import { PrismaClient } from '@prisma/client'
-import { PrismaPg } from '@prisma/adapter-pg'
 
-const adapter = new PrismaPg({
-  connectionString: process.env.DATABASE_URL!,
-})
-const prisma = new PrismaClient({ adapter } as ConstructorParameters<typeof PrismaClient>[0])
+if (process.env.blocks_MONGODB_URI && !process.env.DATABASE_URL) {
+  process.env.DATABASE_URL = process.env.blocks_MONGODB_URI
+}
+
+const prisma = new PrismaClient()
 
 async function main() {
   console.log('Seeding database...')
 
   // Create a demo organization
-  const org = await prisma.organization.upsert({
-    where: { id: 'demo-org-id' },
-    update: {},
-    create: {
-      id: 'demo-org-id',
+  const org = await prisma.organization.create({
+    data: {
       name: 'Acme Capital Management',
       country: 'United States',
       type: 'ASSET_MANAGER',
@@ -25,14 +22,11 @@ async function main() {
   })
 
   // Create demo instrument
-  const instrument = await prisma.instrument.upsert({
-    where: { id: 'demo-instrument-id' },
-    update: {},
-    create: {
-      id: 'demo-instrument-id',
+  const instrument = await prisma.instrument.create({
+    data: {
       name: 'Acme Capital Bond Series A',
       type: 'BOND',
-      supply: BigInt(1_000_000),
+      supply: 1_000_000,
       symbol: 'ACMEBND',
       minimumInvestment: 10000,
       interestRate: 5.5,
@@ -43,18 +37,14 @@ async function main() {
   })
 
   // Create demo contracts
-  await prisma.contractDeployment.upsert({
-    where: { id: 'demo-contract-id' },
-    update: {},
-    create: {
-      id: 'demo-contract-id',
+  await prisma.contractDeployment.create({
+    data: {
       organizationId: org.id,
       instrumentId: instrument.id,
       tokenContract: '0x1234567890abcdef1234567890abcdef12345678',
       registryContract: '0xabcdef1234567890abcdef1234567890abcdef12',
       treasuryContract: '0x9876543210fedcba9876543210fedcba98765432',
       complianceContract: '0xfedcba9876543210fedcba9876543210fedcba98',
-      transactionHash: '0x' + Array.from({ length: 64 }, () => Math.floor(Math.random() * 16).toString(16)).join(''),
     },
   })
 

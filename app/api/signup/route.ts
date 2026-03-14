@@ -32,35 +32,30 @@ export async function POST(req: NextRequest) {
 
     const hashedPassword = await hashPassword(password)
 
-    // Create organization and user in a transaction
-    const result = await prisma.$transaction(async (tx) => {
-      const organization = await tx.organization.create({
-        data: {
-          name: organizationName,
-          country,
-          type: organizationType,
-        },
-      })
-
-      const user = await tx.user.create({
-        data: {
-          email,
-          password: hashedPassword,
-          name: organizationName,
-          organizationId: organization.id,
-        },
-        select: {
-          id: true,
-          email: true,
-          name: true,
-          organizationId: true,
-        },
-      })
-
-      return { user, organization }
+    const organization = await prisma.organization.create({
+      data: {
+        name: organizationName,
+        country,
+        type: organizationType,
+      },
     })
 
-    return NextResponse.json(result, { status: 201 })
+    const user = await prisma.user.create({
+      data: {
+        email,
+        password: hashedPassword,
+        name: organizationName,
+        organizationId: organization.id,
+      },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        organizationId: true,
+      },
+    })
+
+    return NextResponse.json({ user, organization }, { status: 201 })
   } catch (error) {
     console.error('Signup error:', error)
     return NextResponse.json(

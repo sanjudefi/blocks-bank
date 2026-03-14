@@ -7,7 +7,7 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "mongodb"
 }
 
 enum OrganizationType {
@@ -44,18 +44,18 @@ enum InstrumentStatus {
 }
 
 model User {
-  id             String        @id @default(cuid())
+  id             String        @id @default(auto()) @map("_id") @db.ObjectId
   email          String        @unique
   password       String
   name           String?
-  organizationId String?
+  organizationId String?       @db.ObjectId
   organization   Organization? @relation(fields: [organizationId], references: [id])
   createdAt      DateTime      @default(now())
   updatedAt      DateTime      @updatedAt
 }
 
 model Organization {
-  id              String             @id @default(cuid())
+  id              String             @id @default(auto()) @map("_id") @db.ObjectId
   name            String
   country         String
   type            OrganizationType
@@ -73,25 +73,25 @@ model Organization {
 }
 
 model Wallet {
-  id             String       @id @default(cuid())
+  id             String       @id @default(auto()) @map("_id") @db.ObjectId
   address        String       @unique
-  organizationId String
+  organizationId String       @db.ObjectId
   organization   Organization @relation(fields: [organizationId], references: [id])
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
 }
 
 model Instrument {
-  id                String           @id @default(cuid())
+  id                String           @id @default(auto()) @map("_id") @db.ObjectId
   name              String
   type              InstrumentType
-  supply            BigInt
+  supply            Int
   symbol            String
-  minimumInvestment Decimal?
-  interestRate      Decimal?
+  minimumInvestment Float?
+  interestRate      Float?
   maturityDate      DateTime?
   status            InstrumentStatus @default(DRAFT)
-  organizationId    String
+  organizationId    String           @db.ObjectId
   organization      Organization     @relation(fields: [organizationId], references: [id])
   contracts         ContractDeployment[]
   createdAt         DateTime         @default(now())
@@ -99,28 +99,28 @@ model Instrument {
 }
 
 model ContractDeployment {
-  id                 String       @id @default(cuid())
-  organizationId     String
+  id                 String       @id @default(auto()) @map("_id") @db.ObjectId
+  organizationId     String       @db.ObjectId
   organization       Organization @relation(fields: [organizationId], references: [id])
-  instrumentId       String?
+  instrumentId       String?      @db.ObjectId
   instrument         Instrument?  @relation(fields: [instrumentId], references: [id])
   tokenContract      String?
   registryContract   String?
   treasuryContract   String?
   complianceContract String?
   transactionHash    String?
-  blockNumber        BigInt?
+  blockNumber        Int?
   deployedAt         DateTime     @default(now())
   createdAt          DateTime     @default(now())
   updatedAt          DateTime     @updatedAt
 }
 
 model Investor {
-  id             String       @id @default(cuid())
+  id             String       @id @default(auto()) @map("_id") @db.ObjectId
   name           String
   email          String
   walletAddress  String?
-  organizationId String
+  organizationId String       @db.ObjectId
   organization   Organization @relation(fields: [organizationId], references: [id])
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt

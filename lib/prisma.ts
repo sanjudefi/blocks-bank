@@ -1,17 +1,34 @@
 import { PrismaClient } from '@prisma/client'
-import { PrismaPg } from '@prisma/adapter-pg'
 
-const globalForPrisma = globalThis as unknown as {
-  prisma: PrismaClient | undefined
+declare global {
+  // eslint-disable-next-line no-var
+  var __prisma: PrismaClient | undefined
 }
 
-function createPrismaClient() {
-  const connectionString = process.env.DATABASE_URL!
-
-  const adapter = new PrismaPg({ connectionString })
-  return new PrismaClient({ adapter } as ConstructorParameters<typeof PrismaClient>[0])
+function createClient(): PrismaClient {
+  // Alias custom env var to DATABASE_URL that Prisma reads at runtime
+  if (process.env.blocks_MONGODB_URI && !process.env.DATABASE_URL) {
+    process.env.DATABASE_URL = process.env.blocks_MONGODB_URI
+  }
+  return new PrismaClient()
 }
 
-export const prisma = globalForPrisma.prisma ?? createPrismaClient()
+// Lazily initialize — avoids instantiation during Next.js build phase
+function getClient(): PrismaClient {
+  if (!global.__prisma) {
+    global.__prisma = createClient()
+    if (process.env.NODE_ENV !== 'production') {
+      global.__prisma = global.__prisma
+    }
+  }
+  return global.__prisma
+}
 
-if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma
+// Proxy defers PrismaClient construction until first property access (request time)
+export const prisma = new Proxy({} as PrismaClient, {
+  get(_, prop) {
+    const client = getClient()
+    const value = client[prop as keyof PrismaClient]
+    return typeof value === 'function' ? (value as Function).bind(client) : value
+  },
+})

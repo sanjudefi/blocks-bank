@@ -44,41 +44,36 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    // Create instrument and deploy contracts in a transaction
-    const result = await prisma.$transaction(async (tx) => {
-      const instrument = await tx.instrument.create({
-        data: {
-          name,
-          type,
-          supply: BigInt(supply),
-          symbol: symbol.toUpperCase(),
-          minimumInvestment: minimumInvestment ? minimumInvestment : null,
-          interestRate: interestRate ? interestRate : null,
-          maturityDate: maturityDate ? new Date(maturityDate) : null,
-          status: 'DEPLOYED',
-          organizationId,
-        },
-      })
-
-      // Simulate contract deployment
-      const contract = await tx.contractDeployment.create({
-        data: {
-          organizationId,
-          instrumentId: instrument.id,
-          tokenContract: generateContractAddress(),
-          registryContract: generateContractAddress(),
-          treasuryContract: generateContractAddress(),
-          complianceContract: generateContractAddress(),
-          transactionHash: `0x${Array.from({ length: 64 }, () =>
-            Math.floor(Math.random() * 16).toString(16)
-          ).join('')}`,
-        },
-      })
-
-      return { instrument, contract }
+    const instrument = await prisma.instrument.create({
+      data: {
+        name,
+        type,
+        supply: Math.round(Number(supply)),
+        symbol: symbol.toUpperCase(),
+        minimumInvestment: minimumInvestment ? Number(minimumInvestment) : null,
+        interestRate: interestRate ? Number(interestRate) : null,
+        maturityDate: maturityDate ? new Date(maturityDate) : null,
+        status: 'DEPLOYED',
+        organizationId,
+      },
     })
 
-    return NextResponse.json(result, { status: 201 })
+    // Simulate contract deployment
+    const contract = await prisma.contractDeployment.create({
+      data: {
+        organizationId,
+        instrumentId: instrument.id,
+        tokenContract: generateContractAddress(),
+        registryContract: generateContractAddress(),
+        treasuryContract: generateContractAddress(),
+        complianceContract: generateContractAddress(),
+        transactionHash: `0x${Array.from({ length: 64 }, () =>
+          Math.floor(Math.random() * 16).toString(16)
+        ).join('')}`,
+      },
+    })
+
+    return NextResponse.json({ instrument, contract }, { status: 201 })
   } catch (error) {
     console.error('POST instrument error:', error)
     return NextResponse.json({ error: 'Internal server error.' }, { status: 500 })
