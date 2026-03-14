@@ -162,12 +162,12 @@ export default function HomePage() {
             <span className="block bg-gradient-to-r from-blue-400 via-indigo-400 to-violet-400 bg-clip-text text-transparent">
               Assets in Hours.
             </span>
-            <span className="block text-3xl sm:text-4xl md:text-5xl font-bold text-white/60 mt-2">
+            <span className="block text-3xl sm:text-4xl md:text-5xl font-bold text-white/90 mt-2">
               Not Months.
             </span>
           </h1>
 
-          <p className="text-lg sm:text-xl md:text-2xl text-blue-100/70 max-w-3xl mx-auto mb-12 leading-relaxed font-light">
+          <p className="text-lg sm:text-xl md:text-2xl text-blue-100 max-w-3xl mx-auto mb-12 leading-relaxed font-light">
             Blocks Bank gives banks, funds, and asset managers a complete infrastructure to issue, manage,
             and settle tokenized bonds, deposits, real estate, and fund shares — with built-in KYC and compliance.
           </p>
@@ -193,7 +193,7 @@ export default function HomePage() {
               <div key={s.label} className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-5 text-center">
                 <div className="text-3xl font-black text-white mb-1">{s.value}</div>
                 <div className="text-sm font-semibold text-blue-200">{s.label}</div>
-                <div className="text-xs text-white/40 mt-0.5">{s.sub}</div>
+                <div className="text-xs text-white/70 mt-0.5">{s.sub}</div>
               </div>
             ))}
           </div>
@@ -288,7 +288,7 @@ export default function HomePage() {
                     <div className="w-5 h-5 rounded-full bg-red-100 dark:bg-red-900/40 flex items-center justify-center flex-shrink-0">
                       <XCircle className="w-3 h-3 text-red-500" />
                     </div>
-                    <span className="text-sm text-muted-foreground line-through">{s.before}</span>
+                    <span className="text-sm text-slate-500 dark:text-slate-400 line-through">{s.before}</span>
                   </div>
                 ))}
               </div>
@@ -386,7 +386,7 @@ export default function HomePage() {
               Institutional-Grade{' '}
               <span className="bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-transparent">Identity Verification</span>
             </h2>
-            <p className="text-lg text-blue-100/70 max-w-2xl mx-auto">
+            <p className="text-lg text-blue-100 max-w-2xl mx-auto">
               Integrate with the world's leading KYC providers or submit documents manually.
               Every investor is verified before receiving tokens.
             </p>
@@ -402,10 +402,10 @@ export default function HomePage() {
                   </span>
                 </div>
                 <h3 className="font-bold text-white mb-1">{p.name}</h3>
-                <p className="text-xs text-blue-200/60 mb-4">{p.tagline}</p>
+                <p className="text-xs text-blue-200 mb-4">{p.tagline}</p>
                 <ul className="space-y-1.5 mb-5">
                   {p.features.map((f) => (
-                    <li key={f} className="flex items-center gap-2 text-xs text-blue-100/70">
+                    <li key={f} className="flex items-center gap-2 text-xs text-blue-100">
                       <CheckCircle2 className="w-3 h-3 text-emerald-400 flex-shrink-0" />
                       {f}
                     </li>
@@ -426,7 +426,7 @@ export default function HomePage() {
             </div>
             <div className="flex-1 text-center sm:text-left">
               <h3 className="font-bold text-white mb-1">Manual KYC Submission</h3>
-              <p className="text-sm text-blue-100/60">
+              <p className="text-sm text-blue-100">
                 Upload identity documents, proof of address, and corporate registration directly to your dashboard.
                 Our compliance team reviews submissions within 24–48 hours for jurisdictions not covered by automated providers.
               </p>
@@ -553,7 +553,7 @@ export default function HomePage() {
           <h2 className="text-4xl md:text-5xl font-black text-white mb-5 tracking-tight">
             Ready to Tokenize Your First Asset?
           </h2>
-          <p className="text-lg text-blue-100/80 mb-10 max-w-2xl mx-auto">
+          <p className="text-lg text-blue-100 mb-10 max-w-2xl mx-auto">
             Join the financial institutions already using Blocks Bank to reduce issuance costs by 90% and reach investors 100× faster.
           </p>
           <div className="flex flex-wrap items-center justify-center gap-4">

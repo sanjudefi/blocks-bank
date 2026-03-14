@@ -146,7 +146,7 @@ export default function SignupPage() {
             Tokenize financial assets<br />
             <span className="text-blue-400">in minutes.</span>
           </h2>
-          <p className="text-blue-200/70 text-base leading-relaxed mb-10">
+          <p className="text-blue-200 text-base leading-relaxed mb-10">
             Issue bonds, deposits, and fund shares as blockchain tokens —
             with automated compliance, custody, and settlement.
           </p>
@@ -158,13 +158,13 @@ export default function SignupPage() {
             ].map((f) => (
               <div key={f.text} className="flex items-center gap-3">
                 <span className="text-lg">{f.icon}</span>
-                <span className="text-blue-100/80 text-sm">{f.text}</span>
+                <span className="text-blue-100 text-sm">{f.text}</span>
               </div>
             ))}
           </div>
         </div>
 
-        <p className="text-blue-300/40 text-xs">
+        <p className="text-blue-300/70 text-xs">
           © {new Date().getFullYear()} Blocks Bank — Open Financial Infrastructure
         </p>
       </div>

@@ -47,7 +47,7 @@ export default function AdminLoginPage() {
               <ShieldCheck className="w-6 h-6 text-white" />
             </div>
             <CardTitle className="text-white">Admin Access</CardTitle>
-            <CardDescription className="text-white/50">
+            <CardDescription className="text-white/80">
               Enter your admin password to continue.
             </CardDescription>
           </CardHeader>
@@ -59,7 +59,7 @@ export default function AdminLoginPage() {
                 </div>
               )}
               <div className="space-y-1.5">
-                <Label className="text-white/70">Password</Label>
+                <Label className="text-white/90">Password</Label>
                 <div className="relative">
                   <Input type={showPw ? 'text' : 'password'} placeholder="Admin password"
                     value={password} onChange={(e) => setPassword(e.target.value)}

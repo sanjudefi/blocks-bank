@@ -242,7 +242,7 @@ export default function InvestorsPage() {
             <Shield className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
             <div>
               <p className="font-semibold text-blue-900 dark:text-blue-100 text-sm">Connect a KYC Provider</p>
-              <p className="text-blue-700/70 dark:text-blue-300/70 text-xs mt-1">
+              <p className="text-blue-700 dark:text-blue-300 text-xs mt-1">
                 Link one of the verified identity providers below to automate investor onboarding. Once connected, investors receive a secure link to complete verification before receiving tokens.
               </p>
             </div>
