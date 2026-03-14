@@ -10,6 +10,17 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'organizationId is required.' }, { status: 400 })
     }
 
+    // MongoDB ObjectIds must be 24-char hex strings — return empty data for demo/invalid IDs
+    const isValidObjectId = /^[a-f\d]{24}$/i.test(organizationId)
+    if (!isValidObjectId) {
+      return NextResponse.json({
+        stats: { totalInstruments: 0, totalSupply: '0', totalInvestors: 0, assetsUnderManagement: '$0M' },
+        instruments: [],
+        contracts: [],
+        investors: [],
+      })
+    }
+
     // Fetch all data in parallel
     const [instruments, contracts, investors] = await Promise.all([
       prisma.instrument.findMany({

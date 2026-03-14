@@ -42,7 +42,7 @@ export default function DashboardPage() {
     }
     fetch(`/api/dashboard?organizationId=${organizationId}`)
       .then((r) => r.json())
-      .then(setData)
+      .then((json) => { if (json && Array.isArray(json.instruments)) setData(json) })
       .catch(console.error)
       .finally(() => setLoading(false))
   }, [router])
@@ -124,7 +124,7 @@ export default function DashboardPage() {
             <CardContent>
               {loading ? (
                 <div className="space-y-2">{[1, 2].map((i) => <div key={i} className="h-12 rounded-lg bg-muted animate-pulse" />)}</div>
-              ) : data?.instruments.length ? (
+              ) : data?.instruments?.length ? (
                 <div className="space-y-2">
                   {data.instruments.map((inst) => (
                     <div key={inst.id} className="flex items-center gap-3 p-3 rounded-xl border border-border hover:bg-accent/30 transition-colors">
@@ -171,7 +171,7 @@ export default function DashboardPage() {
             <CardContent>
               {loading ? (
                 <div className="space-y-2">{[1].map((i) => <div key={i} className="h-20 rounded-lg bg-muted animate-pulse" />)}</div>
-              ) : data?.contracts.length ? (
+              ) : data?.contracts?.length ? (
                 <div className="space-y-3">
                   {data.contracts.slice(0, 2).map((c) => (
                     <div key={c.id} className="p-3 rounded-xl border border-border space-y-1.5">
